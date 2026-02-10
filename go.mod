@@ -1,4 +1,4 @@
-module justAChatApp
+module chatapp
 
 go 1.25.5
 
