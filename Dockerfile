@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o main .
+RUN go build -o justachatapp .
 
 # Final stage
 FROM alpine:latest
@@ -19,7 +19,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy binary from builder
-COPY --from=builder /app/main .
+COPY --from=builder /app/justachatapp .
 # Copy templates and static files
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/static ./static
@@ -28,4 +28,4 @@ COPY --from=builder /app/static ./static
 EXPOSE 8080
 
 # Run the application
-CMD ["./main"]
+CMD ["./justachatapp"]

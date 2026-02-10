@@ -1,1 +1,1 @@
-web: ./justAChatApp
+web: ./justachatapp
