@@ -15,7 +15,10 @@ func initDB() {
 	// Simple connection string - in a real app, use env vars
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
+		fmt.Println("Warning: DATABASE_URL is empty, falling back to localhost")
 		connStr = "postgres://postgres:postgres@localhost:5432/chatapp?sslmode=disable"
+	} else {
+		fmt.Println("Attempting to connect to database using DATABASE_URL environment variable")
 	}
 
 	var err error
