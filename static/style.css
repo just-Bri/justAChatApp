@@ -173,13 +173,19 @@ header h1 {
 
 /* Custom terminal cursor */
 .terminal-cursor {
-    display: inline-block;
+    display: none;
+    /* Hidden by default */
     width: 8px;
     height: 1.2rem;
     background-color: var(--text-main);
     animation: blink 1s step-end infinite;
     position: absolute;
     pointer-events: none;
+}
+
+.input-wrapper:focus-within .terminal-cursor {
+    display: inline-block;
+    /* Show on focus */
 }
 
 @keyframes blink {

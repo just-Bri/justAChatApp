@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/subtle"
 	"fmt"
+	"html"
 	"html/template"
 	"net/http"
 	"sync"
@@ -61,7 +63,17 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	err := db.QueryRow("SELECT id, password_hash, salt FROM users WHERE username = $1", username).Scan(&user.ID, &user.PasswordHash, &user.Salt)
-	if err != nil || hashPassword(password, user.Salt) != user.PasswordHash {
+
+	valid := false
+	if err == nil {
+		// Constant-time comparison to prevent timing attacks
+		currentHash := hashPassword(password, user.Salt)
+		if subtle.ConstantTimeCompare([]byte(currentHash), []byte(user.PasswordHash)) == 1 {
+			valid = true
+		}
+	}
+
+	if !valid {
 		if r.Header.Get("HX-Request") != "" {
 			fmt.Fprintf(w, `<div class="alert error">[!] system_err: invalid_credentials</div>`)
 			return
@@ -123,6 +135,12 @@ func handleSendMessage(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := getAuthenticatedUserID(r)
 	content := r.FormValue("content")
+	if content == "" {
+		return
+	}
+	if len(content) > 500 {
+		content = content[:500]
+	}
 
 	var msg Message
 	err := db.QueryRow(`
@@ -167,10 +185,14 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case msg := <-messageChan:
+			// Escape user input to prevent XSS in real-time broadcast
+			safeUsername := html.EscapeString(msg.Username)
+			safeContent := html.EscapeString(msg.Content)
+
 			// HTMX SSE format: data: <content>
-			html := fmt.Sprintf(`<div class="message"><span class="time">[%s]</span> <span class="prompt">%s:$</span> %s</div>`,
-				msg.CreatedAt.Format("2006-01-02T15:04:05"), msg.Username, msg.Content)
-			fmt.Fprintf(w, "event: newMessage\ndata: %s\n\n", html)
+			htmlSnippet := fmt.Sprintf(`<div class="message"><span class="time">[%s]</span> <span class="prompt">%s:$</span> %s</div>`,
+				msg.CreatedAt.Format("2006-01-02T15:04:05"), safeUsername, safeContent)
+			fmt.Fprintf(w, "event: newMessage\ndata: %s\n\n", htmlSnippet)
 			w.(http.Flusher).Flush()
 		case <-r.Context().Done():
 			return
