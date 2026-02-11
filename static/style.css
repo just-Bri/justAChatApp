@@ -21,7 +21,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .container {
@@ -55,6 +55,60 @@ header h1 {
 .logout-btn {
     color: #dc322f;
     text-decoration: none;
+}
+
+/* Alert Styling */
+.alert {
+    border: 1px solid var(--accent);
+    padding: 10px;
+    margin-bottom: 20px;
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
+.alert.error {
+    border-color: #dc322f;
+    color: #dc322f;
+}
+
+.alert.success {
+    border-color: #859900;
+    color: #859900;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    body {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .container {
+        padding: 10px;
+        height: 100vh;
+        border: none;
+    }
+
+    .auth-page {
+        padding: 20px;
+    }
+
+    .auth-card {
+        padding: 0;
+        border: none;
+    }
+
+    .chat-window {
+        padding-bottom: 10px;
+    }
+
+    .message {
+        font-size: 0.9rem;
+    }
+
+    .send-form {
+        padding: 10px 0;
+    }
 }
 
 .chat-window {

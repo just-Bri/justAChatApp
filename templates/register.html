@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | ChatApp</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/htmx.min.js"></script>
 </head>
 
 <body class="auth-page">
     <div class="auth-card">
+        <div id="alert-container"></div>
         <h1>system_register</h1>
         <p>Create new user account</p>
-        <form action="/register" method="POST">
+        <form hx-post="/register" hx-target="#alert-container" hx-swap="innerHTML">
             <div class="input-group">
                 <label for="username">user:$</label>
                 <input type="text" id="username" name="username" required autofocus>

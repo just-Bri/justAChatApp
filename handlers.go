@@ -35,10 +35,18 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.Exec("INSERT INTO users (username, password_hash, salt) VALUES ($1, $2, $3)", username, hash, salt)
 	if err != nil {
+		if r.Header.Get("HX-Request") != "" {
+			fmt.Fprintf(w, `<div class="alert error">[!] system_err: user_exists</div>`)
+			return
+		}
 		http.Error(w, "Username already exists", http.StatusBadRequest)
 		return
 	}
 
+	if r.Header.Get("HX-Request") != "" {
+		fmt.Fprintf(w, `<div class="alert success">[+] system_msg: registration_complete. <a href="/login" style="color: inherit">/login</a></div>`)
+		return
+	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
@@ -53,12 +61,11 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	err := db.QueryRow("SELECT id, password_hash, salt FROM users WHERE username = $1", username).Scan(&user.ID, &user.PasswordHash, &user.Salt)
-	if err != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	if hashPassword(password, user.Salt) != user.PasswordHash {
+	if err != nil || hashPassword(password, user.Salt) != user.PasswordHash {
+		if r.Header.Get("HX-Request") != "" {
+			fmt.Fprintf(w, `<div class="alert error">[!] system_err: invalid_credentials</div>`)
+			return
+		}
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
@@ -69,6 +76,11 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	sessionMutex.Unlock()
 
 	setSessionCookie(w, sessionID)
+
+	if r.Header.Get("HX-Request") != "" {
+		w.Header().Set("HX-Redirect", "/")
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
