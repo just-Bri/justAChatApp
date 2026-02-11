@@ -30,20 +30,46 @@
                 {{end}}
             </div>
 
-            <form hx-post="/send" hx-swap="none" hx-on::after-request="this.reset()" class="send-form">
+            <form hx-post="/send" hx-swap="none" hx-on::after-request="this.reset(); updateCursor();" class="send-form">
                 <label for="content">{{.Username}}:$</label>
-                <input type="text" id="content" name="content" autocomplete="off" required autofocus maxlength="500">
+                <div class="input-wrapper">
+                    <input type="text" id="content" name="content" autocomplete="off" required autofocus maxlength="500"
+                        oninput="updateCursor()">
+                    <div id="cursor" class="terminal-cursor"></div>
+                </div>
                 <button type="submit">Submit</button>
             </form>
         </main>
     </div>
     <script>
-        // Auto-scroll to bottom of chat
         const chatWindow = document.getElementById('chat-window');
+        const contentInput = document.getElementById('content');
+        const cursor = document.getElementById('cursor');
+
+        // Auto-scroll to bottom
         const observer = new MutationObserver(() => {
             chatWindow.scrollTop = chatWindow.scrollHeight;
         });
         observer.observe(chatWindow, { childList: true });
+
+        // Position custom cursor
+        function updateCursor() {
+            const text = contentInput.value;
+            // Create a temporary span to measure text width
+            const span = document.createElement('span');
+            span.style.font = getComputedStyle(contentInput).font;
+            span.style.visibility = 'hidden';
+            span.style.whiteSpace = 'pre';
+            span.textContent = text;
+            document.body.appendChild(span);
+            const width = span.offsetWidth;
+            document.body.removeChild(span);
+
+            cursor.style.left = `${width}px`;
+        }
+
+        // Initial position
+        updateCursor();
     </script>
 </body>
 
