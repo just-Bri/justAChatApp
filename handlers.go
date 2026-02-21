@@ -103,9 +103,9 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	db.QueryRow("SELECT username FROM users WHERE id = $1", userID).Scan(&username)
 
 	rows, _ := db.Query(`
-		SELECT m.id, u.username, m.content, m.created_at 
-		FROM messages m 
-		JOIN users u ON m.user_id = u.id 
+		SELECT m.id, u.username, m.content, m.created_at
+		FROM messages m
+		JOIN users u ON m.user_id = u.id
 		ORDER BY m.created_at DESC LIMIT 50`)
 	defer rows.Close()
 
@@ -144,7 +144,7 @@ func handleSendMessage(w http.ResponseWriter, r *http.Request) {
 
 	var msg Message
 	err := db.QueryRow(`
-		INSERT INTO messages (user_id, content) VALUES ($1, $2) 
+		INSERT INTO messages (user_id, content) VALUES ($1, $2)
 		RETURNING id, created_at`, userID, content).Scan(&msg.ID, &msg.CreatedAt)
 	if err != nil {
 		http.Error(w, "Error saving message", http.StatusInternalServerError)
